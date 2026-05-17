@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HeartHandshake, Loader2, Send, CheckCircle2, AlertCircle, Clock3, XCircle, Trash2 } from 'lucide-react';
 import { API_URL } from '../config';
+import { CampaignPageHeader } from '../components/CampaignPageHeader';
 
 interface ResultadoDeteccion {
   ejecutado_at: string;
@@ -390,15 +391,12 @@ export default function FidelizacionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-3">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <HeartHandshake className="h-6 w-6 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">💎 Fidelización — Generar Campaña</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Aumenta el valor de tus clientes y mejora la retención.</p>
-        </div>
-      </div>
+      <CampaignPageHeader
+        icon={<HeartHandshake className="w-8 h-8" />}
+        title="Fidelización — Generar Campaña"
+        description="Aumenta el valor de tus clientes y mejora la retención con estrategias inteligentes."
+        accentColor="blue"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

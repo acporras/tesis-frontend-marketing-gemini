@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CheckSquare, Loader2, Search, X, Check, XCircle, Clock, AlertCircle, Rocket, Gem, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { API_URL } from '../config';
+import { CampaignPageHeader } from '../components/CampaignPageHeader';
 
 interface CampanaResumen {
   id?: string;
@@ -169,14 +170,12 @@ export default function AprobacionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3 mb-2">
-        <div className="p-2 bg-amber-100 rounded-lg">
-          <CheckSquare className="h-6 w-6 text-amber-600" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-          Aprobación de Campañas
-        </h1>
-      </div>
+      <CampaignPageHeader
+        icon={<CheckSquare className="w-8 h-8" />}
+        title="Aprobación de Campañas"
+        description="Revisa, aprueba o rechaza las campañas pendientes antes de su lanzamiento."
+        accentColor="amber"
+      />
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="border-b border-gray-200 dark:border-gray-700">

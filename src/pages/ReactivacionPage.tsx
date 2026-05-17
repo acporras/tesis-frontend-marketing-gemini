@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { RotateCcw, Loader2, Send, CheckCircle2, AlertCircle, Clock3, Search } from 'lucide-react';
 import { API_URL } from '../config';
+import { CampaignPageHeader } from '../components/CampaignPageHeader';
 
 export default function ReactivacionPage() {
   const [loading, setLoading] = useState(false);
@@ -173,33 +174,34 @@ export default function ReactivacionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="p-2 bg-violet-100 rounded-lg">
-              <RotateCcw className="h-6 w-6 text-violet-600" />
+      <div className="space-y-4">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <CampaignPageHeader
+              icon={<RotateCcw className="w-8 h-8" />}
+              title="Reactivación — Detección Automática"
+              description="Identifica y reconecta con clientes inactivos mediante campañas inteligentes."
+              accentColor="violet"
+            />
+            
+            <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 rounded-lg px-4 py-3 border border-slate-200 dark:border-slate-700">
+              <Clock3 className="w-4 h-4 flex-shrink-0" />
+              <span>El sistema detectó automáticamente clientes inactivos anoche (2:00 AM)</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-              Reactivación — Detección Automática
-            </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 flex items-center mt-2 text-sm">
-            <Clock3 className="w-4 h-4 mr-1.5" />
-            El sistema detectó automáticamente clientes inactivos anoche (2:00 AM)
-          </p>
+          <button
+            onClick={handleEjecutarManual}
+            disabled={loading}
+            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 transition-all duration-200 flex-shrink-0"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
+            ) : (
+              <RotateCcw className="-ml-1 mr-2 h-4 w-4" />
+            )}
+            Ejecutar manualmente
+          </button>
         </div>
-        <button
-          onClick={handleEjecutarManual}
-          disabled={loading}
-          className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 transition-all duration-200"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-          ) : (
-            <RotateCcw className="-ml-1 mr-2 h-4 w-4" />
-          )}
-          Ejecutar manualmente
-        </button>
       </div>
 
       {error && (
