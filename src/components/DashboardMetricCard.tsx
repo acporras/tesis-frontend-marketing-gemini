@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface MetricCardProps {
   label: string;
@@ -18,27 +18,38 @@ export function DashboardMetricCard({
   metaLabel,
 }: MetricCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
-      <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-        {label}
-      </p>
-      <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-        {value}
-        <span className="text-lg text-gray-500 dark:text-gray-400 ml-1">{unit}</span>
+    <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-md border border-gray-100 dark:border-slate-700 hover:shadow-lg transition-all duration-200 p-6">
+      {/* Status indicator top bar */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${cumulsMeta ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`} />
+      
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 block">
+            {label}
+          </p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+              {value}
+            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{unit}</span>
+          </div>
+        </div>
+        <div className={`p-2 rounded-lg ${cumulsMeta ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+          {cumulsMeta ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          )}
+        </div>
       </div>
-      <div
-        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-          cumulsMeta
-            ? 'bg-emerald-100 text-emerald-800'
-            : 'bg-red-100 text-red-800'
-        }`}
-      >
-        {cumulsMeta ? (
-          <CheckCircle2 className="w-3 h-3 mr-1" />
-        ) : (
-          <XCircle className="w-3 h-3 mr-1" />
-        )}
-        {metaLabel} {meta}
+      
+      <div className="pt-4 border-t border-gray-100 dark:border-slate-700">
+        <p className={`text-xs font-medium ${cumulsMeta ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+          {metaLabel} {meta} {unit}
+        </p>
+        <p className={`text-xs mt-1 ${cumulsMeta ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+          {cumulsMeta ? '✓ Meta alcanzada' : '⚠ Revisar progreso'}
+        </p>
       </div>
     </div>
   );
