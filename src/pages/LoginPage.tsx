@@ -195,16 +195,6 @@ export default function LoginPage() {
                   )}
                 </button>
               </form>
-
-              {/* Footer */}
-              <div className="pt-4 border-t border-slate-700">
-                <p className="text-center text-sm text-slate-400">
-                  ¿Necesitas ayuda?{' '}
-                  <a href="#" className="text-blue-400 hover:text-blue-300 font-medium transition">
-                    Contacta soporte
-                  </a>
-                </p>
-              </div>
             </div>
           </div>
         </div>
