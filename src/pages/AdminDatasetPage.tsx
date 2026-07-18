@@ -143,7 +143,7 @@ export default function AdminDatasetPage() {
   };
 
   const handleIndexarRAG = async () => {
-    if (!window.confirm(`¿Indexar ${estadoIndexacion?.total_dataset?.toLocaleString() || 'todos los'} registros para RAG? Esto puede tardar varios minutos dependiendo del dataset.`)) return;
+    if (!window.confirm(`\u00bfIndexar ${estadoIndexacion?.total_dataset?.toLocaleString() || 'todos los'} registros para RAG? Esto puede tardar varios minutos.`)) return;
     setIndexando(true);
     setResultadoIndexacion(null);
     setError(null);
@@ -155,14 +155,26 @@ export default function AdminDatasetPage() {
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || 'Error al indexar');
+        throw new Error(err.detail || 'Error al iniciar indexacion');
       }
-      const data = await res.json();
-      setResultadoIndexacion(data);
-      await fetchEstadoIndexacion();
+      const poll = setInterval(async () => {
+        try {
+          const sr = await fetch(`${API_URL}/admin/dataset/estado-indexacion`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+          });
+          if (sr.ok) {
+            const d = await sr.json();
+            setEstadoIndexacion(d);
+            if (!d.en_curso && d.mensaje_tarea) {
+              clearInterval(poll);
+              setIndexando(false);
+              setResultadoIndexacion({ mensaje: d.mensaje_tarea });
+            }
+          }
+        } catch (_) {}
+      }, 3000);
     } catch (e: any) {
       setError(e.message);
-    } finally {
       setIndexando(false);
     }
   };
