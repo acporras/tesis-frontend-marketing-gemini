@@ -185,7 +185,21 @@ export default function ReactivacionPage() {
           </div>
           <p className="text-gray-600 dark:text-gray-400 flex items-center mt-2 text-sm">
             <Clock3 className="w-4 h-4 mr-1.5" />
-            El sistema detectó automáticamente clientes inactivos anoche (2:00 AM)
+            {campanas.length > 0
+              ? (() => {
+                  const ultima = new Date(
+                    Math.max(...campanas.map((c: any) => new Date(c.created_at).getTime()))
+                  )
+                  const hoy = new Date()
+                  const ayer = new Date(hoy)
+                  ayer.setDate(hoy.getDate() - 1)
+                  const esHoy = ultima.toDateString() === hoy.toDateString()
+                  const esAyer = ultima.toDateString() === ayer.toDateString()
+                  const hora = ultima.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+                  const fechaLabel = esHoy ? 'hoy' : esAyer ? 'anoche' : ultima.toLocaleDateString('es-PE', { day: 'numeric', month: 'long' })
+                  return `Última detección automática: ${fechaLabel} a las ${hora}`
+                })()
+              : 'El job nocturno se ejecuta diariamente a las 2:00 AM — aún no hay detecciones registradas'}
           </p>
         </div>
         <button
