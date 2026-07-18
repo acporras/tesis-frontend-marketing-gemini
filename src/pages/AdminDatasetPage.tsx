@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Database, UploadCloud, RefreshCcw, CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
+import { Database, UploadCloud, RefreshCcw, CheckCircle2, AlertCircle, Clock, FileText, Cpu } from 'lucide-react';
 import { API_URL } from '../config';
 
 export default function AdminDatasetPage() {
@@ -7,6 +7,9 @@ export default function AdminDatasetPage() {
   const [historial, setHistorial] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [estadoIndexacion, setEstadoIndexacion] = useState<any>(null);
+  const [indexando, setIndexando] = useState(false);
+  const [resultadoIndexacion, setResultadoIndexacion] = useState<any>(null);
 
   // Formularios
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -44,9 +47,20 @@ export default function AdminDatasetPage() {
     }
   };
 
+  const fetchEstadoIndexacion = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/admin/dataset/estado-indexacion`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) setEstadoIndexacion(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
     fetchEstado();
     fetchHistorial();
+    fetchEstadoIndexacion();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +139,31 @@ export default function AdminDatasetPage() {
       setError(e.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleIndexarRAG = async () => {
+    if (!window.confirm(`¿Indexar ${estadoIndexacion?.total_dataset?.toLocaleString() || 'todos los'} registros para RAG? Esto puede tardar varios minutos dependiendo del dataset.`)) return;
+    setIndexando(true);
+    setResultadoIndexacion(null);
+    setError(null);
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/admin/dataset/indexar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Error al indexar');
+      }
+      const data = await res.json();
+      setResultadoIndexacion(data);
+      await fetchEstadoIndexacion();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setIndexando(false);
     }
   };
 
@@ -289,7 +328,85 @@ export default function AdminDatasetPage() {
         </div>
       </div>
 
+      {/* INDEXACIÓN RAG */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-2">
+          <Cpu className="w-4 h-4 text-violet-500" />
+          <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Indexación RAG (Búsqueda Semántica)</h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            El RAG convierte cada cliente del dataset en un vector numérico (embedding) para que Gemini
+            pueda recuperar los perfiles más relevantes antes de generar cada campaña.
+            <strong className="text-gray-800 dark:text-gray-200"> Sin indexar, Gemini trabaja sin contexto real del banco.</strong>
+          </p>
+
+          {/* Estado actual */}
+          {estadoIndexacion && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{estadoIndexacion.total_indexados?.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Indexados</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-amber-600">{estadoIndexacion.pendientes?.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pendientes</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                <p className={`text-2xl font-bold ${estadoIndexacion.porcentaje >= 100 ? 'text-emerald-600' : 'text-violet-600'}`}>
+                  {estadoIndexacion.porcentaje}%
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Completado</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
+                <p className={`text-lg font-bold ${estadoIndexacion.rag_listo ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {estadoIndexacion.rag_listo ? '✅ Activo' : '❌ Inactivo'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Estado RAG</p>
+              </div>
+            </div>
+          )}
+
+          {/* Barra de progreso */}
+          {estadoIndexacion && (
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 ${estadoIndexacion.porcentaje >= 100 ? 'bg-emerald-500' : 'bg-violet-500'}`}
+                style={{ width: `${Math.min(estadoIndexacion.porcentaje, 100)}%` }}
+              />
+            </div>
+          )}
+
+          {/* Resultado de última indexación */}
+          {resultadoIndexacion && (
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-4 text-sm text-emerald-800 dark:text-emerald-300">
+              ✅ {resultadoIndexacion.mensaje} ({resultadoIndexacion.errores > 0 ? `${resultadoIndexacion.errores} errores` : 'sin errores'})
+            </div>
+          )}
+
+          {estadoIndexacion && estadoIndexacion.ultima_indexacion && (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Última indexación: {new Date(estadoIndexacion.ultima_indexacion).toLocaleString('es-PE')}
+            </p>
+          )}
+
+          <button
+            onClick={handleIndexarRAG}
+            disabled={indexando || !estadoIndexacion?.total_dataset}
+            className="inline-flex items-center px-5 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm"
+          >
+            <Cpu className={`w-4 h-4 mr-2 ${indexando ? 'animate-spin' : ''}`} />
+            {indexando
+              ? 'Indexando... (puede tardar varios minutos)'
+              : estadoIndexacion?.rag_listo
+              ? '🔄 Re-indexar dataset'
+              : '🚀 Indexar para RAG'}
+          </button>
+        </div>
+      </div>
+
       {/* HISTORIAL */}
+
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Historial de Cargas</h2>
