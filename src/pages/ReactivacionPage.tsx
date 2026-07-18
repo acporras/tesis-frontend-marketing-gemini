@@ -185,10 +185,10 @@ export default function ReactivacionPage() {
           </div>
           <p className="text-gray-600 dark:text-gray-400 flex items-center mt-2 text-sm">
             <Clock3 className="w-4 h-4 mr-1.5" />
-            {campanas.length > 0
+            {detectados.length > 0
               ? (() => {
                   const ultima = new Date(
-                    Math.max(...campanas.map((c: any) => new Date(c.created_at).getTime()))
+                    Math.max(...detectados.map((c: any) => new Date(c.created_at).getTime()))
                   )
                   const hoy = new Date()
                   const ayer = new Date(hoy)
